@@ -97,6 +97,7 @@
     env:
       PLEX_UID: 1000
       PLEX_GID: 1000
+      LD_LIBRARY_PATH: "/usr/lib/plexmediaserver"
       PLEX_CLAIM: "{{plextoken_var.stdout}}"
       ADVERTISE_IP: "{{plex_advert_ip}}"
     networks:
