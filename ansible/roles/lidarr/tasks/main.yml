@@ -46,6 +46,7 @@
     volumes:
       - /opt/appdata/lidarr:/config
       - /mnt/unionfs:/unionfs
+      - /mnt/unionfs-encfs:/unionfs-encfs
       - "{{path.stdout}}/sab/complete:/complete"
       - "{{path.stdout}}/nzbget/completed:/completed"
       - "{{path.stdout}}/rutorrents:/downloads"
