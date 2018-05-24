@@ -57,6 +57,7 @@
       - /opt/appdata/{{role_name}}/mp4_automator:/config_mp4_automator
       - "/opt/appdata/{{role_name}}:/config"
       - /mnt/unionfs:/unionfs
+      - /mnt/unionfs-encfs:/unionfs-encfs
       - "{{path.stdout}}/torrentvpn/downloaded:/data/completed"
       - "{{path.stdout}}/sab/complete:/complete"
       - "{{path.stdout}}/nzbget/completed:/completed"
