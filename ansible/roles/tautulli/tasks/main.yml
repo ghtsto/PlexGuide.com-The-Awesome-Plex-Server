@@ -41,7 +41,7 @@
       - "{{ports.stdout}}8181:8181"
     volumes:
       - /opt/appdata/tautulli:/config
-      - /opt/appdata/plex/Library/Application\ Support/Plex\ Media\
+      - "/opt/appdata/plex/database/Library/Application Support/Plex Media Server/Logs:/plexlogs"
     env:
       PUID: "1000"
       PGID: "1000"
