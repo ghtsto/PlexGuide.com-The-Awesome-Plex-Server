@@ -17,22 +17,20 @@
 #################################################################################
 edition=$( cat /var/plexguide/pg.edition ) 1>/dev/null 2>&1
 version=$( cat /var/plexguide/pg.version ) 1>/dev/null 2>&1
+echo 'INFO - @Settings Menu - Drives Edition' > /var/plexguide/pg.log && bash /opt/plexguide/roles/log/log.sh
 
-HEIGHT=15
+HEIGHT=14
 WIDTH=58
-CHOICE_HEIGHT=8
+CHOICE_HEIGHT=7
 BACKTITLE="Visit https://PlexGuide.com - Automations Made Simple"
 TITLE="PG Settings"
 MENU="Make Your Selection Choice:"
 
-OPTIONS=(A "Domain/Traefik: Setup/Change Domain & Trefik"
+OPTIONS=(A "Domain App    : Select Default App for Domain"
          B "Hard Drive 2nd: Use a Second HD for Processing"
-         C "Notifications : Enable the Use of Notifications"
-         E "Processor     : Enhance Processing Power"
-         F "Kernel Mods   : Enhance Network Throughput"
-         G "WatchTower    : Auto-Update Application Manager"
-         H "App Themes    : Install Dark Theme(s) For Apps "
-         I "Default App   : For Your Top Level Domain"
+         C "Processor     : Enhance Processing Power"
+         D "Kernel Mods   : Enhance Network Throughput"
+         E "WatchTower    : Auto-Update Application Manager"
          Z "Exit")
 
 CHOICE=$(dialog --clear \
@@ -46,36 +44,35 @@ CHOICE=$(dialog --clear \
 clear
 case $CHOICE in
     A)
-        bash /opt/plexguide/menus/traefik/main.sh
+        bash /opt/plexguide/roles/tld/main.sh
+        echo 'INFO - Selected Top Level Domain App' > /var/plexguide/pg.log && bash /opt/plexguide/roles/log/log.sh
         ;;
     B)
         #### Solo Drive Edition
         if [ "$edition" == "PG Edition: HD Solo" ]
           then
           dialog --title "-- NOTE --" --msgbox "\nNOT enabled for HD Solo Edition! You only have ONE DRIVE!" 0 0
+          echo 'WARNING - Utilizing HD Solo Edition - Cannot Configure Drives' > /var/plexguide/pg.log && bash /opt/plexguide/roles/log/log.sh
           bash /opt/plexguide/menus/settings/drives.sh
           exit
-        fi 
+        echo 'INFO - Selected 2nd HD' > /var/plexguide/pg.log && bash /opt/plexguide/roles/log/log.sh
+        fi
         ;;
     C)
-        bash /opt/plexguide/menus/notifications/main.sh
-        echo "Pushover Notifications are Working!" > /tmp/pushover
-        ansible-playbook /opt/plexguide/ansible/plexguide.yml --tags pushover &>/dev/null &
+        bash /opt/plexguide/roles/processor/scripts/processer-menu.sh
+        echo "INFO - Selected Processor Power Change" > /var/plexguide/pg.log && bash /opt/plexguide/roles/log/log.sh
         ;;
     D)
-        bash /opt/plexguide/menus/ports/main.sh ;;
+        echo "INFO - Selected Kernel Modifications" > /var/plexguide/pg.log && bash /opt/plexguide/roles/log/log.sh
+        bash /opt/plexguide/scripts/menus/kernel-mod-menu.sh
+        ;;
     E)
-        bash /opt/plexguide/scripts/menus/processor/processor-menu.sh ;;
-    F)
-        bash /opt/plexguide/scripts/menus/kernel-mod-menu.sh ;;
-    H)
-        bash /opt/plexguide/menus/watchtower/main.sh ;;
-    J)
-        bash /opt/plexguide/menus/themes/main.sh ;;
-    I)
-        bash /opt/plexguide/menus/tld/main.sh ;;     
+        echo "INFO - Selected WatchTower Change" > /var/plexguide/pg.log && bash /opt/plexguide/roles/log/log.sh
+        bash /opt/plexguide/roles/watchtower/menus/main.sh
+        ;;
     Z)
         clear
+        echo "INFO - Exited Settings Menu" > /var/plexguide/pg.log && bash /opt/plexguide/roles/log/log.sh
         exit 0
         ;;
     esac

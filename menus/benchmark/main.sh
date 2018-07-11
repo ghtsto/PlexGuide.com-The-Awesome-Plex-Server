@@ -15,6 +15,7 @@
 #   under the GPL along with build & install instructions.
 #
 #################################################################################
+echo 'INFO - @Benchmark Menu' > /var/plexguide/pg.log && bash /opt/plexguide/roles/log/log.sh
 
 export NCURSES_NO_UTF8_ACS=1
 ## point to variable file for ipv4 and domain.com
@@ -42,12 +43,13 @@ CHOICE=$(dialog --backtitle "$BACKTITLE" \
 
 case $CHOICE in
         A)
+echo "INFO - Selected: Info & Benchmark - Basic" > /var/plexguide/pg.log && bash /opt/plexguide/roles/log/log.sh
             clear
             sudo wget -qO- bench.sh | bash
             echo ""
-            read -n 1 -s -r -p "Press any key to continue"
-            ;;
+            read -n 1 -s -r -p "Press any key to continue"            ;;
         B)
+echo "INFO - Selected: Info & Benchmark - Advanced" > /var/plexguide/pg.log && bash /opt/plexguide/roles/log/log.sh
             clear
             curl -LsO raw.githubusercontent.com/thecreatorzone/plexguide-bench/master/bench.sh; chmod +x bench.sh; chmod +x bench.sh
             echo ""
@@ -56,12 +58,14 @@ case $CHOICE in
             read -n 1 -s -r -p "Press any key to continue"
             ;;
         C)
+echo "INFO - Selected: Info & Benchmark - Custom" > /var/plexguide/pg.log && bash /opt/plexguide/roles/log/log.sh
             clear
             bash /opt/plexguide/scripts/menus/bench-custom.sh
             echo ""
             read -n 1 -s -r -p "Press any key to continue"
             ;;
         D)
+echo "INFO - Selected: Simple Speed TEst" > /var/plexguide/pg.log && bash /opt/plexguide/roles/log/log.sh
             clear
             pip install speedtest-cli
             echo
@@ -70,17 +74,18 @@ case $CHOICE in
             read -n 1 -s -r -p "Press any key to continue"
             ;;
         E)
+echo "INFO - Selected: Speed Test Server"> /var/plexguide/pg.log && bash /opt/plexguide/roles/log/log.sh
             program=speed
             port=8223
             dialog --infobox "Installing: SpeedTEST Server" 3 38
-            ansible-playbook /opt/plexguide/ansible/plexguide.yml --tags speedtestserver 1>/dev/null 2>&1
+            ansible-playbook /opt/plexguide/pg.yml --tags speedtestserver 1>/dev/null 2>&1
 
             echo "$program" > /tmp/program
             echo "$port" > /tmp/port
             #### Pushes Out Ending
             bash /opt/plexguide/menus/programs/ending.sh
             #### recall itself to loop unless user exits
-            bash /opt/plexguide/menus/programs/support.sh
+            bash /opt/plexguide/roles/programs/support.sh
             ;;
         Z)
             exit 0 ;;

@@ -4,7 +4,7 @@ source /opt/plexguide/scripts/supertransfer/rcloneupload.sh
 source /opt/plexguide/scripts/supertransfer/settings.conf
 source /opt/plexguide/scripts/supertransfer/spinner.sh
 
-declare -a reqlist=(rclone awk sed egrep grep echo printf find sort tee python3)
+declare -a reqlist=(rclone awk sed egrep grep echo printf find sort tee python3 gawk)
 for app in $reqlist; do
   [[ ! $(which $app) ]] && echo -e "$app dependency not met/nPlease install $app" && exit 1
 done
@@ -94,6 +94,18 @@ EOF
 configure_teamdrive
 configure_teamdrive_share
 #configure_personal_share
+
+read -p 'Would you like to enable encryption? y/n>' answer
+[[ $answer == n || $answer == no ]] && sed -i '/'^encrypt'=/ s/=.*/='no'/' $userSettings
+[[ $answer == y || $answer == yes ]] && sed -i '/'^encrypt'=/ s/=.*/='yes'/' $userSettings
+source $userSettings
+
+# get encryption password + salt
+if [[ $encrypt == "yes" ]]; then
+      echo '[WARN] This is a alpha feature. may not work.'
+      read -p 'Enter your encryption password: ' password
+      read -p 'Enter your encryption salt: ' salt
+fi
 
 # configure json's for rclone
 configure_Json

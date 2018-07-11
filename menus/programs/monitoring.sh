@@ -16,6 +16,7 @@
 #
 #################################################################################
 export NCURSES_NO_UTF8_ACS=1
+echo 'INFO - @Monitoring PG Menu' > /var/plexguide/pg.log && bash /opt/plexguide/roles/log/log.sh
 
  HEIGHT=10
  WIDTH=38
@@ -42,12 +43,14 @@ case $CHOICE in
 		port=19999
 		dialog --infobox "Installing: $display" 3 30
 		skip=yes
-		ansible-playbook /opt/plexguide/ansible/plexguide.yml --tags netdata &>/dev/null &
-        sleep 3
+        sleep 2
+        clear
+		ansible-playbook /opt/plexguide/pg.yml --tags netdata
+        read -n 1 -s -r -p "Press any key to continue"
             echo "$program" > /tmp/program
             echo "$program" > /tmp/program_var
             echo "$port" > /tmp/port
-            bash /opt/plexguide/menus/time/cron.sh
+            
             bash /opt/plexguide/menus/programs/ending.sh
 		;;
 
@@ -55,13 +58,15 @@ case $CHOICE in
 		display=NETDATA-Advanced
 		program="netdata"
 		port="9090"
+        sleep 2
+        clear
 		dialog --infobox "Installing: $display" 3 38
-		ansible-playbook /opt/plexguide/ansible/plexguide.yml --tags "monitor" &>/dev/null &
-        sleep 3
+		ansible-playbook /opt/plexguide/pg.yml --tags "monitor"
+        read -n 1 -s -r -p "Press any key to continue"
             echo "$program" > /tmp/program
             echo "$program" > /tmp/program_var
             echo "$port" > /tmp/port
-            bash /opt/plexguide/menus/time/cron.sh
+            
             bash /opt/plexguide/menus/programs/ending.sh
 		;;
 

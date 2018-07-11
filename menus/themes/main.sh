@@ -41,10 +41,10 @@ case $CHOICE in
             bash /opt/plexguide/menus/themes/darkernzbget.sh \
             -i docker -c nzbget && read -p "Press Any Key To Continue." ;;
         X)
-            ansible-playbook /opt/plexguide/ansible/plexguide.yml --tags nzbget;;
+            ansible-playbook /opt/plexguide/pg.yml --tags nzbget;;
         Z)
             clear
             exit 0 ;;
 esac
 
-bash /opt/plexguide/menus/main.sh
+bash /opt/plexguide/roles/main.sh

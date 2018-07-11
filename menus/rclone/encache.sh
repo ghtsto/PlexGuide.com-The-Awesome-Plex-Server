@@ -97,7 +97,7 @@ rclone config
 #      echo "PG Wiki For generating API keys: https://bit.ly/2vnFBxW"
 #      read -p 'Press any key to continue... '
 #      choice1 ;;
-#   e) bash /opt/plexguide/menus/main.sh ;;
+#   e) bash /opt/plexguide/roles/main.sh ;;
 #   *) echo "Invalid Choice"
 #      read -p 'Press any key to continue... '
 #      exit 1 ;;
@@ -121,8 +121,8 @@ mkdir -p /root/.config/rclone/ 1>/dev/null 2>&1
 ## Copying to /mnt incase
 cp ~/.config/rclone/rclone.conf /root/.config/rclone/ 1>/dev/null 2>&1
 
-ansible-playbook /opt/plexguide/ansible/plexguide.yml --tags encache
-#ansible-playbook /opt/plexguide/ansible/vpn.yml --tags encache
+ansible-playbook /opt/plexguide/pg.yml --tags encache
+#ansible-playbook /opt/plexguide/pg.yml --tags encache
 
 ## Encache Script
 chmod 775 /opt/appdata/plexguide/encache.sh 1>/dev/null 2>&1
@@ -144,4 +144,4 @@ rm -r /var/plexguide/rclone/un 1>/dev/null 2>&1
 rm -r /var/plexguide/rclone/en 1>/dev/null 2>&1
 
 # pauses
-bash /opt/plexguide/scripts/docker-no/continue.sh
+bash /opt/plexguide/roles/misc/continue.sh

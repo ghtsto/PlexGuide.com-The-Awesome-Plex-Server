@@ -7,7 +7,7 @@
 # init_DB() - validates gdsa's & init least usage DB
 
 ################### Load CloudCMD ST2 Edition - START
-ansible-playbook /opt/plexguide/ansible/plexguide.yml --tags cloudst2 &>/dev/null &
+ansible-playbook /opt/plexguide/pg.yml --tags cloudst2 &>/dev/null &
 ################### Load CloudCMD ST2 Edition - END
 
 cat_Secret_Art(){
@@ -156,11 +156,12 @@ cat <<MSG
 
 ############ CONFIGURATION ################################
 
-1. Go to [32mhttp://${localIP}:7998[0m
-2. Login: plex / guide
-3. Drag & Drop your keys in the PG CloudCMD ST Edition
-4. Follow the instructions to generate the json keys
-5. Upload 20-99 Gsuite service account json keys
+1. Wait between 1-2 Minutes for the link BELOW to work!
+2. Go to [32mhttp://${localIP}:7998[0m
+3. Login: plex / guide
+4. Drag & Drop your keys in the PG CloudCMD ST Edition
+5. Follow the instructions to generate the json keys
+6. Upload 20-99 Gsuite service account json keys
           - domain wide delegation not needed.
 
 TIP: Port 8000 is alternative port (slower process)
@@ -179,6 +180,10 @@ start_spinner "Terminating Web Server."
 sleep 2
 { kill $jobpid && wait $jobpid; } &>/dev/null
 stop_spinner $(( ! $? ))
+############ KILL CLOUDST2
+docker stop cloudst2 1>/dev/null 2>&1
+docker rm cloudst2 &>/dev/null &
+############ KILL CLOUDST2
 
 if [[ $(ps -ef | grep "jsonUpload.py" | grep -v grep) ]]; then
   start_spinner "Web Server Still Running. Attempting to kill again."
@@ -267,10 +272,6 @@ echo
 echo 'NOTE: you can copy and paste the whole chunk at once'
 echo 'If you need to see them again, they are in /tmp/clientemails'
 read -p 'Press Any Key To Continue.'
-############ KILL CLOUDST2
-docker stop cloudst2 1>/dev/null 2>&1
-docker rm cloudst2 &>/dev/null &
-############ KILL CLOUDST2
 return 0
 }
 
@@ -296,6 +297,24 @@ service_account_file = $json
 team_drive = $teamDrive
 
 CFG
+
+# add in encrypted rclone config (password + salt need to be added)
+if [[ $encrypt == "yes" ]]; then
+cat <<-CFG >> $rclonePath
+[GDSA${newMaxGdsa}c]
+type = crypt
+remote = GDSA${newMaxGdsa}:/
+filename_encryption = standard
+directory_name_encryption = true
+password = asdfasdfasdfasdf
+password2 = asdfasdfasdfasdf
+
+CFG
+# update password + salt & obscure for rclone encrypt config
+rclone config password GDSA${newMaxGdsa}c:/ password "${password}"
+rclone config password GDSA${newMaxGdsa}c:/ password2 "${salt}"
+fi
+
     ((++newGdsaCount))
   fi
 done

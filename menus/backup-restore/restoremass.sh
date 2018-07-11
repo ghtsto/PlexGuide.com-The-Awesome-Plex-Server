@@ -15,6 +15,8 @@
 #   under the GPL along with build & install instructions.
 #
 #################################################################################
+echo 'INFO - @Restore Mass Menu' > /var/plexguide/pg.log && bash /opt/plexguide/roles/log/log.sh
+recovery=$( cat /var/plexguide/restore.id )
 
 export NCURSES_NO_UTF8_ACS=1
 
@@ -22,7 +24,7 @@ if dialog --stdout --title "Restore Mass Confirmation" \
             --backtitle "Visit https://PlexGuide.com - Automations Made Simple" \
             --yesno "\nDo you want to BACKOUT & EXIT from making a Mass Restore?" 0 0; then
             dialog --title "PG Restore Status" --msgbox "\nExiting! User selected NOT to RESTORE!" 0 0
-            sudo bash /opt/plexguide/menus/backup-restore/main.sh
+            sudo bash /opt/plexguide/roles/backup-restore-nav/main.sh
             exit 0
         else
             clear
@@ -31,7 +33,7 @@ if dialog --stdout --title "Restore Mass Confirmation" \
 sudo rm -r /opt/appdata/plexguide/backuplist2 1>/dev/null 2>&1
 sudo rm -r /opt/appdata/plexguide/backuplist 1>/dev/null 2>&1
 
-ls -la /mnt/gdrive/plexguide/backup.old | awk '{ print $9}' | tail -n 6 > /opt/appdata/plexguide/backuplist
+ls -la /mnt/gdrive/plexguide/backup.old/$recovery | awk '{ print $9}' | tail -n 6 > /opt/appdata/plexguide/backuplist
 
 declare -i count=0
 
@@ -108,7 +110,7 @@ case $CHOICE in
             exit 0 ;;
 esac
 
-mfolder="/mnt/gdrive/plexguide/backup.old/"
+mfolder="/mnt/gdrive/plexguide/backup.old/$recovery"
 mpath="$mfolder$varselect"
 
 # Force Exit if Required
@@ -116,11 +118,11 @@ if [ $varselect = "main" ]
 then
   clear
   echo "Main Selected"
-  mpath="/mnt/gdrive/plexguide/backup/"
+  mpath="/mnt/gdrive/plexguide/backup/$recovery"
 fi
 
 # Force Exit if Required
-if [ $mpath = "/mnt/gdrive/plexguide/backup.old/" ]
+if [ $mpath = "/mnt/gdrive/plexguide/backup.old/$recovery" ]
 then
   clear
   echo "You Selected a Blank Field - Nothing Happened"
@@ -131,19 +133,17 @@ fi
 
 ls -la $mpath | awk '{ print $9}' | tail -n 9 | cut -f 1 -d '.' > /opt/appdata/plexguide/backuplist2
 
-  echo "$Mass Restore Started!" > /tmp/pushover
-  ansible-playbook /opt/plexguide/ansible/plexguide.yml --tags pushover &>/dev/null &
-
+clear
+#### Commenting Out To Let User See
 while read p; do
   echo $p > /tmp/program_var
   app=$( cat /tmp/program_var )
-  dialog --infobox "Restoring App: $app" 3 37
-  ansible-playbook /opt/plexguide/ansible/plexguide.yml --tags restoremass 1>/dev/null 2>&1
+  ###dialog --infobox "Restoring App: $app" 3 37
+  ansible-playbook /opt/plexguide/pg.yml --tags restoremass #1>/dev/null 2>&1
   
-  echo "$app: Restore Complete" > /tmp/pushover
-  ansible-playbook /opt/plexguide/ansible/plexguide.yml --tags pushover &>/dev/null &
-
 done </opt/appdata/plexguide/backuplist2
+
+read -n 1 -s -r -p "Press any key to continue"
 
 rm -r /opt/appdata/plexguide/backuplist2 1>/dev/null 2>&1
 rm -r /opt/appdata/plexguide/backuplist 1>/dev/null 2>&1
@@ -151,11 +151,8 @@ rm -r /opt/appdata/var* 1>/dev/null 2>&1
 
 chmod 600 /opt/appdata/traefik/acme/acme.json 1>/dev/null 2>&1
 
-dialog --title "PG Restore Status" --msgbox "\nMass Application Restore Complete! You must REDEPLOY each Application!" 0 0
+echo 'INFO - Mass Restore Complete!' > /var/plexguide/pg.log && bash /opt/plexguide/roles/log/log.sh
+dialog --title "PG Restore Status" --msgbox "\nMass Application Restore Complete!\n\nYou must DEPLOY each APPLICATION that have NOT LAUNCHED before!" 0 0
 clear
 
-echo "Mass Restore Complete!" > /tmp/pushover
-ansible-playbook /opt/plexguide/ansible/plexguide.yml --tags pushover &>/dev/null &
-
-sudo bash /opt/plexguide/menus/backup-restore/main.sh
 exit 0

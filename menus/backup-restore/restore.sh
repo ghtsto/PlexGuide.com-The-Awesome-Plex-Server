@@ -15,6 +15,7 @@
 #   under the GPL along with build & install instructions.
 #
 #################################################################################
+echo 'INFO - @Restore Solo Menu' > /var/plexguide/pg.log && bash /opt/plexguide/roles/log/log.sh
 
 export NCURSES_NO_UTF8_ACS=1
 
@@ -40,18 +41,23 @@ OPTIONS=(1 "CouchPotato"
          13 "NZBHydra2"
          14 "Ombi"
          15 "Organizr"
-         16 "Plex"
-         17 "Portainer"
-         18 "Radarr"
-         19 "Resilio"
-         20 "Rutorrent"
-         21 "SABNZBD"
-         22 "SickRage"
-         23 "Sonarr"
-         24 "Tautulli"
-         25 "Ubooquity"
-         26 "Airsonic"
-         27 "TorrentVPN"
+         16 "OrganizrV2"
+         17 "Plex"
+         18 "Portainer"
+         19 "Radarr"
+         20 "Resilio"
+         21 "Rutorrent"
+         22 "SABNZBD"
+         23 "SickRage"
+         24 "Sonarr"
+         25 "Tautulli"
+         26 "Ubooquity"
+         27 "Airsonic"
+         28 "TorrentVPN"
+         29 "qBittorrent"
+         30 "Radarr4k"
+         31 "Sonarr4k"
+         32 "Ombi4k"
          Z "Exit")
 
 CHOICE=$(dialog --clear \
@@ -94,29 +100,39 @@ case $CHOICE in
         15)
             echo "organizr" > /tmp/program_var ;;
         16)
-            echo "plex" > /tmp/program_var ;;
+            echo "organizrv2" > /tmp/program_var ;;
         17)
-            echo "portainer" > /tmp/program_var ;;
+            echo "plex" > /tmp/program_var ;;
         18)
-            echo "radarr" > /tmp/program_var ;;
+            echo "portainer" > /tmp/program_var ;;
         19)
-            echo "resilio" > /tmp/program_var ;;
+            echo "radarr" > /tmp/program_var ;;
         20)
-            echo "rutorrent" > /tmp/program_var ;;
+            echo "resilio" > /tmp/program_var ;;
         21)
-            echo "sabnzbd" > /tmp/program_var ;;
+            echo "rutorrent" > /tmp/program_var ;;
         22)
-            echo "sickrage" > /tmp/program_var ;;
+            echo "sabnzbd" > /tmp/program_var ;;
         23)
-            echo "sonarr" > /tmp/program_var ;;
+            echo "sickrage" > /tmp/program_var ;;
         24)
-            echo "tautulli" > /tmp/program_var ;;
+            echo "sonarr" > /tmp/program_var ;;
         25)
-            echo "ubooquity" > /tmp/program_var ;;
+            echo "tautulli" > /tmp/program_var ;;
         26)
-            echo "airsonic" > /tmp/program_var ;;
+            echo "ubooquity" > /tmp/program_var ;;
         27)
+            echo "airsonic" > /tmp/program_var ;;
+        28)
             echo "vpn" > /tmp/program_var ;;
+        29)
+            echo "qbittorrent" /tmp/program_var ;;
+        30)
+            echo "radarr4k" > /tmp/program_var ;;
+        31)
+            echo "sonarr4k" > /tmp/program_var ;;
+        32)
+            echo "ombi4k" /tmp/program_var ;;
         Z)
             clear
             exit 0 ;;
@@ -124,8 +140,9 @@ case $CHOICE in
 esac
 
 app=$( cat /tmp/program_var )
+recovery=$( cat /var/plexguide/restore.id )
 
-file="/mnt/gdrive/plexguide/backup/$app.tar"
+file="/mnt/gdrive/plexguide/backup/$recovery/$app.tar"
 if [ -e "$file" ]
     then
 
@@ -144,31 +161,10 @@ if [ -e "$file" ]
         exit 0
 fi
 
-    echo "true" > /tmp/alive
-    ansible-playbook /opt/plexguide/ansible/plexguide.yml --tags restore &>/dev/null &
+    ansible-playbook /opt/plexguide/pg.yml --tags restore #&>/dev/null &
 
-    echo "$app: Restore Started" > /tmp/pushover
-    ansible-playbook /opt/plexguide/ansible/plexguide.yml --tags pushover &>/dev/null &
-
-    loop="true"
-    echo "true" > /tmp/alive
-    while [ "$loop" = "true" ]
-    do
-        dialog --infobox "Restoring / " 3 16
-        sleep 0.5
-        dialog --infobox "Restoring | " 3 16
-        sleep 0.5
-        dialog --infobox "Restoring \ " 3 16
-        sleep 0.5
-        dialog --infobox "Restoring - " 3 16
-        sleep 0.5
-        loop=$(cat /tmp/alive) 1>/dev/null 2>&1
-    done
-
-echo "$app: Restore Complete" > /tmp/pushover
-ansible-playbook /opt/plexguide/ansible/plexguide.yml --tags pushover &>/dev/null &
+read -n 1 -s -r -p "Press any key to continue"
 
 dialog --title "PG Backup Status" --msgbox "\nYour Restore of -- $app -- from Google Drive is Complete!" 0 0
 
-sudo bash /opt/plexguide/menus/backup-restore/restore.sh
 exit 0

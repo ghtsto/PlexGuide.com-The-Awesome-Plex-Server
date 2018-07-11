@@ -20,11 +20,12 @@ file="/var/plexguide/server.ports.status" 1>/dev/null 2>&1
   echo "[OPEN]" > /var/plexguide/server.ports.status
   fi
 ############################### Calls Variables
-  
+
 appguard=$(cat /var/plexguide/server.appguard)
 portstat=$(cat /var/plexguide/server.ports.status)
 
-############################### END
+echo "INFO - @PG Security Menu" > /var/plexguide/pg.log && bash /opt/plexguide/roles/log/log.sh
+echo "INFO - AppGuard $appguard | Ports $portstat" > /var/plexguide/pg.log && bash /opt/plexguide/roles/log/log.sh
 
 HEIGHT=10
 WIDTH=43
@@ -48,11 +49,14 @@ CHOICE=$(dialog --clear \
 clear
 case $CHOICE in
         A)
-          bash /opt/plexguide/menus/ports/main.sh ;;
+          echo "INFO - Selected Ports Menu Interface" > /var/plexguide/pg.log && bash /opt/plexguide/roles/log/log.sh
+          bash /opt/plexguide/roles/ports/main.sh ;;
         B)
+          echo "INFO - APPGuard Menu Interface" > /var/plexguide/pg.log && bash /opt/plexguide/roles/log/log.sh
           bash /opt/plexguide/menus/security/ht.sh ;;
         Z)
             clear
+            echo "INFO - Exited PG Security Menu" > /var/plexguide/pg.log && bash /opt/plexguide/roles/log/log.sh
             exit 0
             ;;
 esac

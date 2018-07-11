@@ -18,17 +18,18 @@
 export NCURSES_NO_UTF8_ACS=1
  ## point to variable file for ipv4 and domain.com
 
-HEIGHT=12
+HEIGHT=13
 WIDTH=40
-CHOICE_HEIGHT=5
+CHOICE_HEIGHT=6
 BACKTITLE="Visit https://PlexGuide.com - Automations Made Simple"
 TITLE="Plex Enhacements Tools"
 MENU="Make a Selection:"
 
-OPTIONS=(A "PGDupes   (BETA)"
-         B "PGTrak    (BETA)"
-         C "Telly     (BETA)"
-         D "SSTVProxy (BETA)"
+OPTIONS=(A "PGDupes            "
+         B "PGTrak"
+         C "WebTools 3.0"
+         D "Telly        (BETA)"
+         E "SSTVProxy    (BETA)"
          Z "Exit")
 
 CHOICE=$(dialog --clear \
@@ -47,10 +48,36 @@ case $CHOICE in
         B)
             bash /opt/plexguide/menus/pgtrak/main.sh
             ;;
+        #C)
+        #    if [ ! "$(docker ps -q -f name=plex)" ]; then
+        #      dialog --title "NOTE!" --msgbox "\nPlex needs to be running!" 7 38
+        #    else
+        #      if [ ! -s /opt/appdata/plexguide/plextoken ]; then
+        #        dialog --title "NOTE!" --msgbox "\nYour plex username and password is needed to get your plextoken!" 7 38
+        #        bash /opt/plexguide/roles/plextoken/main.sh
+        #      fi
+        #      ansible-role pgscan
+        #      dialog --title "Your PGscan URL - We Saved It" --msgbox "\nURL: $(cat /opt/appdata/plexguide/pgscanurl)\nNote: You need this for sonarr/radarr!\nYou can always get it later!" 0 0
+        #    fi
+        #    ;;
         C)
-            bash /opt/plexguide/menus/plex/telly.sh
+            if dialog --stdout --title "WebTools Question" \
+              --backtitle "Visit https://PlexGuide.com - Automations Made Simple" \
+              --yesno "\nDo You Want to Install WebTools 3.0?" 7 50; then
+                dialog --infobox "WebTools: Installing - Please Wait (Slow)" 3 48
+                clear 
+                ansible-playbook /opt/plexguide/pg.yml --tags webtools
+                read -n 1 -s -r -p "Press any key to continue"
+
+            else
+                dialog --infobox "WebTools: Not Installed" 3 45
+                sleep 2
+            fi
             ;;
         D)
+            bash /opt/plexguide/menus/plex/telly.sh
+            ;;
+        E)
             bash /opt/plexguide/menus/plex/sstvproxy.sh
             ;;
         Z)

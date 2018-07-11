@@ -43,18 +43,20 @@ then
    exit
 fi
 
-file="/var/plexguide/api.trakkey"
+file="/var/plexguide/pgtrak.secret"
 if [ -e "$file" ]
 then
     echo "" 1>/dev/null 2>&1
 else
-    dialog --title "-- WARNING! --" --msgbox "\nYou must set a Track.TV API Key!\n\nVisit pgtrak.plexguide.com for more info?" 0 0
+    dialog --title "-- WARNING! --" --msgbox "\nYou must set a Track.TV Client & Secert!\n\nVisit pgtrak.plexguide.com for more info?" 0 0
 
     if dialog --stdout --title "Are You Ready?" \
     --backtitle "Visit https://PlexGuide.com - Automations Made Simple" \
-    --yesno "\nDo you have your Trekt API key?" 0 0; then
+    --yesno "\nDo you have your Trakt Keys?" 0 0; then
         bash /opt/plexguide/menus/pgtrak/traktkey.sh
     else
+echo 'FAILURE - Required Trakt Keys' > /var/plexguide/pg.log && bash /opt/plexguide/roles/log/log.sh
+
         dialog --title "-- Note! --" --msgbox "\nCome Back Anytime! As most non-US citizen say -- Cheers! --" 0 0
     exit
     fi
@@ -66,8 +68,7 @@ if [ -e "$file" ]
 then
     echo "" 1>/dev/null 2>&1
 else
-    echo "/NOT-set" > /var/plexguide/pgtrak.sonarr
-    exit
+    echo "/unionfs/tv" > /var/plexguide/pgtrak.sonarr
 fi
 
 file="/var/plexguide/pgtrak.radarr"
@@ -75,26 +76,49 @@ if [ -e "$file" ]
 then
     echo "" 1>/dev/null 2>&1
 else
-    echo "/NOT-set" > /var/plexguide/pgtrak.radarr
+    echo "/unionfs/movies" > /var/plexguide/pgtrak.radarr
 fi
 
 radarr=$( cat /var/plexguide/pgtrak.radarr )
 sonarr=$( cat /var/plexguide/pgtrak.sonarr )
 
+# SET DEFAULT PROFILES
+file="/var/plexguide/pgtrak.prosonarr"
+if [ -e "$file" ]
+then
+    echo "" 1>/dev/null 2>&1
+else
+    echo "Any" > /var/plexguide/pgtrak.prosonarr
+fi
+
+file="/var/plexguide/pgtrak.proradarr"
+if [ -e "$file" ]
+then
+    echo "" 1>/dev/null 2>&1
+else
+    echo "Any" > /var/plexguide/pgtrak.proradarr
+fi
+
+proradarr=$( cat /var/plexguide/pgtrak.proradarr )
+prosonarr=$( cat /var/plexguide/pgtrak.prosonarr )
+
 ############################# START
-HEIGHT=14
-WIDTH=48
-CHOICE_HEIGHT=7
+echo 'INFO - @PGTrak Menu' > /var/plexguide/pg.log && bash /opt/plexguide/roles/log/log.sh
+
+HEIGHT=15
+WIDTH=55
+CHOICE_HEIGHT=8
 BACKTITLE="Visit https://PlexGuide.com - Automations Made Simple"
 TITLE="PGTrak"
 MENU="Make a Selection:"
 
-OPTIONS=(A "Deploy PGTrak"
-         B "Trakt API-Key"
-         C "Change Path - Sonarr"
-         D "Change Path - Radarr"
-         E "View Paths & Trakt API"
-         F "Mini FAQ & Info"
+OPTIONS=(A "Trakt API-Key"
+         B "Sonarr Path: $sonarr"
+         C "Radarr Path: $radarr"
+         D "Profile Sonarr: $prosonarr"
+         E "Profile Radarr: $proradarr"
+         F "Deploy PGTrak"
+         G "Mini FAQ & Info"
          Z "Exit")
 
 CHOICE=$(dialog --clear \
@@ -108,44 +132,98 @@ CHOICE=$(dialog --clear \
 clear
 case $CHOICE in
         A)
+         dialog --title "Trakt Requested Information" \
+        --backtitle "Visit https://PlexGuide.com - Automations Made Simple" \
+        --inputbox "Trakt Client-ID:" 8 55 2>/var/plexguide/pgtrak.client
+        key=$(cat /var/plexguide/pgtrak.client)
+        dialog --infobox "Entered Client-ID: $key" 0 0
+
+        if dialog --stdout --title "API Question?" \
+            --backtitle "Visit https://PlexGuide.com - Automations Made Simple" \
+            --yesno "\nClient Correct? $key" 0 0; then
+            easteregg="foundme"
+        else
+            rm -r /var/plexguide/pgtrak.client
+            bash /opt/plexguide/menus/pgtrak/traktkey.sh
+            exit
+        fi
+
+        dialog --title "Trakt Requested Information" \
+        --backtitle "Visit https://PlexGuide.com - Automations Made Simple" \
+        --inputbox "Trakt Client-Secret:" 8 55 2>/var/plexguide/pgtrak.secret
+        key=$(cat /var/plexguide/pgtrak.secret)
+        dialog --infobox "Entered Client-ID: $key" 0 0
+
+        if dialog --stdout --title "API Question?" \
+            --backtitle "Visit https://PlexGuide.com - Automations Made Simple" \
+            --yesno "\nSecret Correct? $key" 0 0; then
+            easteregg="foundme"
+        else
+            rm -r /var/plexguide/pgtrak.client
+            rm -r /var/plexguide/pgtrak.secret
+            bash /opt/plexguide/menus/pgtrak/traktkey.sh
+            exit
+        fi
+            dialog --title "Rerun PGTrak Note" --msgbox "\nIf done, rerun [Deploy PGTrak]. If not, your changes will not go into affect until you do so!" 0 0
+            ;;
+        B)
+            bash /opt/plexguide/menus/pgtrak/sonarrpath.sh
+            dialog --title "Rerun PGTrak Note" --msgbox "\nIf done, rerun [Deploy PGTrak]. If not, your changes will not go into affect until you do so!" 0 0
+            ;;
+        C)
+            bash /opt/plexguide/menus/pgtrak/radarrpath.sh
+            dialog --title "Rerun PGTrak Note" --msgbox "\nIf done, rerun [Deploy PGTrak]. If not, your changes will not go into affect until you do so!" 0 0
+            ;;
+        D)
+             dialog --title "Set Your Sonarr Profile" \
+            --backtitle "Visit https://PlexGuide.com - Automations Made Simple" \
+            --inputbox "Sonarr Profile:" 8 40 2>/var/plexguide/pgtrak.prosonarr
+            key=$(cat /var/plexguide/pgtrak.prosonarr)
+            dialog --infobox "Entered Sonarr Profile: $key" 0 0
+
+            if dialog --stdout --title "Profile Question?" \
+                --backtitle "Visit https://PlexGuide.com - Automations Made Simple" \
+                --yesno "\nProfile Correct? $key" 0 0; then
+                easteregg="foundme"
+            else
+                rm -r /var/plexguide/pgtrak.prosonarr
+                bash /opt/plexguide/menus/pgtrak/traktkey.sh
+                exit
+            fi
+            ;;
+        E)
+             dialog --title "Set Your Radarr Profile" \
+            --backtitle "Visit https://PlexGuide.com - Automations Made Simple" \
+            --inputbox "Radarr Profile:" 8 40 2>/var/plexguide/pgtrak.proradarr
+            key=$(cat /var/plexguide/pgtrak.proradarr)
+            dialog --infobox "Entered Radarr Profile: $key" 0 0
+
+            if dialog --stdout --title "Profile Question?" \
+                --backtitle "Visit https://PlexGuide.com - Automations Made Simple" \
+                --yesno "\nProfile Correct? $key" 0 0; then
+                easteregg="foundme"
+            else
+                rm -r /var/plexguide/pgtrak.proradarr
+                bash /opt/plexguide/menus/pgtrak/traktkey.sh
+                exit
+            fi
+            ;;
+        F)
             if dialog --stdout --title "-- Deploy Warning --" \
                 --backtitle "Visit https://PlexGuide.com - Automations Made Simple" \
-                --yesno "\nIf this IS NOT your first time, be aware that you may lose your personal configs from the config.json if you have edited it from before!\n\nTake note of what you put and edit it again! Want to PGTrak?" 0 0; then
+                --yesno "\nIf this IS NOT your first time, be aware that you may lose your personal configs from the config.json if you have edited it from before!\n\nEnsure that you set your Paths & your Quality!\n\nWant to Deploy PGTrak?" 0 0; then
                 dialog --infobox "Deploying PGTrak!" 3 26
-                ansible-playbook /opt/plexguide/ansible/plexguide.yml --tags pgtrak 1>/dev/null 2>&1
-                dialog --title "PGDupes Status" --msgbox "\nPGTrak Deployment Complete! Use the CMD pgtrak in the Command Line!" 0 0
+                sleep 2
+                clear
+                ansible-playbook /opt/plexguide/pg.yml --tags pgtrak
+                read -n 1 -s -r -p "Press any key to continue"
+                dialog --title "PGTrak Status" --msgbox "\nPGTrak Deployment Complete! Use the CMD pgtrak in the Command Line!" 0 0
             else
                 dialog --title "-- WARNING! --" --msgbox "\nExiting! Nothing Happened!" 0 0
                 exit
             fi
             ;;
-        B)
-            dialog --infobox "Recorded API Key: $key" 0 0
-            if dialog --stdout --title "API Question?" \
-                --backtitle "Visit https://PlexGuide.com - Automations Made Simple" \
-                --yesno "\nAPI Correct? $key" 0 0; then
-                rm -r /var/plexguide/api.trakkey
-            else
-                bash /opt/plexguide/menus/pgtrak/traktkey.sh
-                exit
-            fi
-            dialog --infobox "Entered API Key: $key" 0 0
-            bash /opt/plexguide/menus/pgtrak/traktkey.sh
-            dialog --title "Rerun PGTrak Note" --msgbox "\nIf done, rerun [Deploy PGTrak]. If not, your changes will not go into affect until you do so!" 0 0
-            ;;
-        C)
-            bash /opt/plexguide/menus/pgtrak/sonarrpath.sh
-            dialog --title "Rerun PGTrak Note" --msgbox "\nIf done, rerun [Deploy PGTrak]. If not, your changes will not go into affect until you do so!" 0 0
-            ;;
-        D)
-            bash /opt/plexguide/menus/pgtrak/radarrpath.sh
-            dialog --title "Rerun PGTrak Note" --msgbox "\nIf done, rerun [Deploy PGTrak]. If not, your changes will not go into affect until you do so!" 0 0
-            ;;
-        E)
-            key=$( cat /var/plexguide/api.trakkey )
-            dialog --title "PGTrak Stats" --msgbox "\nSonarr Path: $sonarr\nRadarr Path: $radarr\n\nTrack API: $key" 0 0
-            ;;
-        F)
+        G)
             dialog --title "Modify Config File" --msgbox "\nTo Modify the rest of the configurations, type the following: sudo nano /opt/appdata/pgtrak/config.json\n\nPlease visit pgtrak.plexguide.com for way more info!" 0 0
             ;;
         Z)
