@@ -24,7 +24,7 @@ WIDTH=33
 CHOICE_HEIGHT=11
 BACKTITLE="Visit https://PlexGuide.com - Automations Made Simple"
 TITLE="Select A PlexGuide Version"
-MENU="Update to PG 6.011 to see FURTHER UPDATES"
+MENU="Make a Selection:"
 
 OPTIONS=(Z "----- Exit Menu -----"
          01 "EDGE         ~ 6.015"

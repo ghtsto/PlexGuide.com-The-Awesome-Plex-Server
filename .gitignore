@@ -1,3 +1,5 @@
 
 .DS_Store
 plexguide.retry
+pg.retry
+pg.yml
