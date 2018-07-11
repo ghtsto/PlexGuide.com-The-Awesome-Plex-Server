@@ -1,0 +1,57 @@
+#!/bin/bash
+#
+# [Ansible Role]
+#
+# GitHub:   https://github.com/Admin9705/PlexGuide.com-The-Awesome-Plex-Server
+# Author:   Admin9705 & Deiteq & Flicker-Rate
+# URL:      https://plexguide.com
+#
+# PlexGuide Copyright (C) 2018 PlexGuide.com
+# Licensed under GNU General Public License v3.0 GPL-3 (in short)
+#
+#   You may copy, distribute and modify the software as long as you track
+#   changes/dates in source files. Any modifications to our software
+#   including (via compiler) GPL-licensed code must also be made available
+#   under the GPL along with build & install instructions.
+#
+#################################################################################
+---
+- include_role:
+    name: variables
+
+- name: Remove njsterm Container
+  docker_container:
+    name: njsterm
+    state: absent
+
+################ DEPLOY
+- name: Create njsterm Container
+  docker_container:
+    name: njsterm
+    image: node:carbon
+    pull: yes
+    working_dir: /home/node/app
+    command: "npm start"
+    published_ports:
+      - "8098:8098"
+    env:
+      PUID: "1000"
+      PGID: "1000"
+    networks:
+      - name: plexguide
+        aliases:
+          - njsterm
+    labels:
+      traefik.enable: "true"
+      traefik.frontend.redirect.entryPoint: "https"
+      traefik.frontend.rule: "Host:njsterm.{{domain.stdout}}"
+      traefik.port: "8098"
+    volumes:
+      - /opt/appdata/njsterm:/home/node/app
+    restart_policy: always
+    state: started
+
+- name: Restart Container
+  docker_container:
+    name: njsterm
+    state: started

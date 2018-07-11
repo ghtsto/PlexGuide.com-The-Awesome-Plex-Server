@@ -58,6 +58,7 @@
       - "/opt/appdata/{{role_name}}:/config"
       - /mnt/unionfs:/unionfs
       - /mnt/unionfs-encfs:/unionfs-encfs
+      - /mnt/deluge/temp:/deluge-temp
       - "{{path.stdout}}/torrentvpn/downloaded:/data/completed"
       - "{{path.stdout}}/sab/complete:/complete"
       - "{{path.stdout}}/nzbget/completed:/completed"
