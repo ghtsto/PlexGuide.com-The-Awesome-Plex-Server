@@ -49,7 +49,7 @@
     volumes:
       - /opt/appdata/njsterm:/home/node/app
     restart_policy: always
-    state: stopped
+    state: started
 
 - name: Restart Container
   docker_container:
